@@ -76,7 +76,7 @@ import six
 from translate.misc.deprecation import deprecated
 from translate.misc.multistring import multistring
 from translate.storage import base
-
+from translate.tools.unflatten import unflatten
 
 class JsonUnit(base.TranslationUnit):
     """A JSON entry"""
@@ -158,16 +158,11 @@ class JsonFile(base.TranslationStore):
             self.parse(inputfile)
 
     def serialize(self, out):
-        def merge(d1, d2):
-            for k in d2:
-                if k in d1 and isinstance(d1[k], dict) and isinstance(d2[k], dict):
-                    merge(d1[k], d2[k])
-                else:
-                    d1[k] = d2[k]
         units = OrderedDict()
         for unit in self.unit_iter():
-            merge(units, unit.getvalue())
-        out.write(json.dumps(units, **self.dump_args).encode(self.encoding))
+            units[unit.getkey()] = unit.converttarget()                
+        complexUnflattened = unflatten(units)
+        out.write(json.dumps(complexUnflattened, **self.dump_args).encode(self.encoding))
         out.write(b'\n')
 
     def _extract_translatables(self, data, stop=None, prev="", name_node=None,
