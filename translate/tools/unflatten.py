@@ -163,8 +163,11 @@ class _list_holder(_holder):
             if key != n:
                 assert key > n
                 missing_key = "%s[%d]" % (self.flat_key, n)
-                #raise ValueError("missing key %r" % missing_key)
-                value.append(OrderedDict())
+                # BEGIN PATCH by S. Rettig
+                # raise ValueError("missing key %r" % missing_key)
+                for x in range(key - len(value)):
+                  value.append(OrderedDict())
+                # END PATCH
             value.append(val)
         return value
 
